@@ -8,19 +8,26 @@
     {
       "src": "package.json",
       "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist"
-      }
+      "config": { "distDir": "dist" }
     }
   ],
   "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "/backend/api/index.js"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/login", "destination": "/backend/api/index.js" },
+    { "source": "/signup", "destination": "/backend/api/index.js" },
+    { "source": "/products", "destination": "/backend/api/index.js" },
+    { "source": "/products/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/sell", "destination": "/backend/api/index.js" },
+    { "source": "/search", "destination": "/backend/api/index.js" },
+    { "source": "/repair-request", "destination": "/backend/api/index.js" },
+    { "source": "/repair-requests/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/admin/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/product/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/product-status/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/purchase/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/my-products/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/my-orders/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/sync-products", "destination": "/backend/api/index.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
