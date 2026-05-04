@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import BASE_URL from '../utils/api';
 
 const Explore = () => {
+    const navigate = useNavigate();
     const [Category, setCategory] = useState("All")
     const [products, setProducts] = useState([])
     const [searchQuery, setSearchQuery] = useState("")
@@ -82,6 +83,12 @@ const Explore = () => {
         window.location.href = "/explore/sell";
     };
 
+    const handleSignOut = () => {
+        localStorage.clear();
+        setUsername("");
+        navigate("/login");
+    };
+
     const categories = [
         { label: "All", value: "All" },
         { label: "📱 Mobiles", value: "Mobile Phones" },
@@ -95,14 +102,17 @@ const Explore = () => {
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white font-title">
 
+            {/* ─── NAVBAR ─── */}
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#0a0a0a]/95 backdrop-blur-md shadow-[0_1px_0_rgba(255,255,255,0.06)]" : "bg-[#0a0a0a]"}`}>
 
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-3 flex items-center gap-3">
 
+                    {/* Logo */}
                     <Link to="/" className="text-xl md:text-2xl font-black tracking-tighter text-white shrink-0 font-bat">
                         Eco<span className="text-emerald-400">loop</span>
                     </Link>
 
+                    {/* Location */}
                     <div className="hidden md:flex items-center gap-1 text-xs text-zinc-400 border border-zinc-800 rounded-full px-3 py-1.5 shrink-0">
                         <span>📍</span>
                         <select className="bg-transparent text-zinc-300 cursor-pointer outline-none text-xs">
@@ -113,6 +123,7 @@ const Explore = () => {
                         </select>
                     </div>
 
+                    {/* Search desktop */}
                     <div className="flex-1 relative hidden sm:block">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">🔍</span>
                         <input
@@ -124,21 +135,50 @@ const Explore = () => {
                         />
                     </div>
 
+                    {/* Mobile search toggle */}
                     <button
                         onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
                         className="sm:hidden flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 shrink-0"
                     >🔍</button>
 
+                    {/* Desktop nav icons */}
                     <div className="hidden md:flex items-center gap-1 shrink-0">
-                        <Link to="/login" className="flex flex-col items-center px-2.5 py-1.5 rounded-xl hover:bg-zinc-900 transition group">
-                            <span className="text-base">👤</span>
-                            <span className="text-[9px] text-zinc-400 group-hover:text-white transition mt-0.5 max-w-[60px] truncate">
-                                {username || "Sign In"}
-                            </span>
-                        </Link>
+
+                        {/* ✅ USER DROPDOWN WITH SIGN OUT */}
+                        <div className="relative group">
+                            <button className="flex flex-col items-center px-2.5 py-1.5 rounded-xl hover:bg-zinc-900 transition">
+                                <span className="text-base">👤</span>
+                                <span className="text-[9px] text-zinc-400 group-hover:text-white transition mt-0.5 max-w-[60px] truncate">
+                                    {username || "Sign In"}
+                                </span>
+                            </button>
+                            <div className="absolute top-full right-0 mt-1 bg-zinc-900 border border-zinc-800 rounded-xl shadow-xl min-w-[170px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                {username ? (
+                                    <>
+                                        <div className="px-4 py-3 text-xs text-zinc-400 border-b border-zinc-800">
+                                            Signed in as <span className="text-white font-semibold">{username}</span>
+                                        </div>
+
+                                        <button
+                                            onClick={handleSignOut}
+                                            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-b-xl transition border-t border-zinc-800"
+                                        >
+                                            🚪 Sign Out
+                                        </button>
+                                    </>
+                                ) : (
+                                    <Link to="/login" className="flex items-center gap-2 px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-xl transition">
+                                        👤 Sign In
+                                    </Link>
+                                )}
+                            </div>
+                        </div>
+
                         <Link to="/explore/sell" className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs px-3 py-2 rounded-full transition-all">
                             + Sell
                         </Link>
+
+                        {/* Repair dropdown */}
                         <div className="relative group">
                             <button className="flex flex-col items-center px-2.5 py-1.5 rounded-xl hover:bg-zinc-900 transition">
                                 <span className="text-base">🔧</span>
@@ -152,6 +192,7 @@ const Explore = () => {
                                 )}
                             </div>
                         </div>
+
                         <Link to="/cart" className="flex flex-col items-center px-2.5 py-1.5 rounded-xl hover:bg-zinc-900 transition group">
                             <span className="text-base">🛒</span>
                             <span className="text-[9px] text-zinc-400 group-hover:text-white transition mt-0.5">Cart</span>
@@ -171,6 +212,7 @@ const Explore = () => {
                         )}
                     </div>
 
+                    {/* Mobile right side */}
                     <div className="flex md:hidden items-center gap-2 ml-auto shrink-0">
                         <Link to="/explore/sell" className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs px-3 py-2 rounded-full transition-all">
                             + Sell
@@ -186,6 +228,7 @@ const Explore = () => {
                     </div>
                 </div>
 
+                {/* Mobile search bar */}
                 {mobileSearchOpen && (
                     <div className="sm:hidden px-4 pb-3">
                         <div className="relative">
@@ -202,11 +245,18 @@ const Explore = () => {
                     </div>
                 )}
 
+                {/* Mobile drawer menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden bg-zinc-950 border-t border-zinc-800 px-4 py-4 space-y-1">
-                        <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white">
-                            <span>👤</span> {username || "Sign In"}
-                        </Link>
+                        {username ? (
+                            <div className="px-3 py-2 text-xs text-zinc-400 border-b border-zinc-800 mb-2">
+                                Signed in as <span className="text-white font-semibold">{username}</span>
+                            </div>
+                        ) : (
+                            <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white">
+                                <span>👤</span> Sign In
+                            </Link>
+                        )}
                         <Link to="/repair" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white">
                             <span>🔧</span> Book Repair
                         </Link>
@@ -232,20 +282,29 @@ const Explore = () => {
                                 <span className="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold px-3 py-1 rounded-full">👑 Admin Mode</span>
                             </div>
                         )}
+                        {/* ✅ Sign Out in mobile menu */}
+                        {username && (
+                            <button
+                                onClick={handleSignOut}
+                                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-red-400 border-t border-zinc-800 mt-2"
+                            >
+                                <span>🚪</span> Sign Out
+                            </button>
+                        )}
                     </div>
                 )}
 
+                {/* Category pills */}
                 <div className="border-t border-zinc-900">
                     <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-2.5 flex gap-2 overflow-x-auto scrollbar-hide">
                         {categories.map((cat) => (
                             <button
                                 key={cat.value}
                                 onClick={() => setCategory(cat.value)}
-                                className={`shrink-0 px-3 md:px-4 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                                    Category === cat.value
+                                className={`shrink-0 px-3 md:px-4 py-1.5 rounded-full text-xs font-medium transition-all border ${Category === cat.value
                                         ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_0_12px_rgba(52,211,153,0.3)]"
                                         : "bg-transparent text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-white"
-                                }`}
+                                    }`}
                             >
                                 {cat.label}
                             </button>
@@ -254,6 +313,7 @@ const Explore = () => {
                 </div>
             </nav>
 
+            {/* ─── HERO BANNER ─── */}
             <div className="pt-[130px] md:pt-[120px]">
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-4 md:pt-8 pb-4 md:pb-6">
                     <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-emerald-950 border border-zinc-800 p-6 md:p-10">
@@ -273,6 +333,7 @@ const Explore = () => {
                 </div>
             </div>
 
+            {/* ─── PRODUCT GRID ─── */}
             <div className="max-w-[1400px] mx-auto px-4 md:px-6 pb-20">
                 <div className="flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-2">
                     <h2 className="text-lg md:text-xl font-bold text-white">
@@ -298,6 +359,8 @@ const Explore = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-4">
                         {Array.isArray(filteredProducts) && filteredProducts.map((item) => (
                             <div key={item.id} className="group relative">
+
+                                {/* Admin overlay */}
                                 {isAdmin && (
                                     <div className="absolute inset-0 z-10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto">
                                         <div className="absolute inset-0 bg-black/55 rounded-2xl backdrop-blur-[1px]" />
@@ -312,6 +375,7 @@ const Explore = () => {
                                     </div>
                                 )}
 
+                                {/* Product card */}
                                 {item.status === "sold" ? (
                                     <div className="cursor-not-allowed">
                                         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden opacity-60">
