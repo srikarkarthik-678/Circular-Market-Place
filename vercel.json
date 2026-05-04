@@ -21,6 +21,8 @@
     { "source": "/search", "destination": "/backend/api/index.js" },
     { "source": "/repair-request", "destination": "/backend/api/index.js" },
     { "source": "/repair-requests/(.*)", "destination": "/backend/api/index.js" },
+    { "source": "/businesses", "destination": "/backend/api/index.js" },
+    { "source": "/businesses/(.*)", "destination": "/backend/api/index.js" },
     { "source": "/admin/(.*)", "destination": "/backend/api/index.js" },
     { "source": "/product/(.*)", "destination": "/backend/api/index.js" },
     { "source": "/product-status/(.*)", "destination": "/backend/api/index.js" },
