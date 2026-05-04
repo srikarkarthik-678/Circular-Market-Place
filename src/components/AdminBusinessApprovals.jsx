@@ -24,6 +24,8 @@ const AdminBusinessApprovals = () => {
   const [tier, setTier] = useState("bronze");
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [actionBusy, setActionBusy] = useState(false);
 
   const isAdmin = typeof window !== "undefined" && localStorage.getItem("isAdmin") === "true";
 
@@ -35,7 +37,8 @@ const AdminBusinessApprovals = () => {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}/admin/businesses`);
+      // Cache-bust + no-store so Vercel/browser never serves a stale list after an approval
+      const res = await fetch(`${BASE_URL}/admin/businesses?_=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
       setBusinesses(Array.isArray(data) ? data : []);
     } catch {
@@ -45,13 +48,36 @@ const AdminBusinessApprovals = () => {
     }
   };
 
+  const sendStatusUpdate = async (id, payload) => {
+    setActionBusy(true);
+    setActionError("");
+    try {
+      const res = await fetch(`${BASE_URL}/admin/businesses/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+      const text = await res.text();
+      let body = null;
+      try { body = text ? JSON.parse(text) : null; } catch { /* non-JSON */ }
+      if (!res.ok || (body && body.error)) {
+        throw new Error((body && body.error) || `Server returned ${res.status}${text ? `: ${text.slice(0, 140)}` : ""}`);
+      }
+      return true;
+    } catch (err) {
+      console.error("Admin status update failed:", err);
+      setActionError(err.message || "Update failed");
+      return false;
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
   const submitApprove = async () => {
     if (!approveTarget) return;
-    await fetch(`${BASE_URL}/admin/businesses/${approveTarget.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "approved", certification_tier: tier }),
-    });
+    const ok = await sendStatusUpdate(approveTarget.id, { status: "approved", certification_tier: tier });
+    if (!ok) return;
     setApproveTarget(null);
     setTier("bronze");
     fetchAll();
@@ -59,11 +85,8 @@ const AdminBusinessApprovals = () => {
 
   const submitReject = async () => {
     if (!rejectTarget) return;
-    await fetch(`${BASE_URL}/admin/businesses/${rejectTarget.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "rejected", rejection_reason: rejectReason }),
-    });
+    const ok = await sendStatusUpdate(rejectTarget.id, { status: "rejected", rejection_reason: rejectReason });
+    if (!ok) return;
     setRejectTarget(null);
     setRejectReason("");
     fetchAll();
@@ -221,9 +244,15 @@ const AdminBusinessApprovals = () => {
               ))}
             </div>
 
+            {actionError && (
+              <div className="mb-4 bg-red-500/10 border border-red-500/30 text-red-300 text-xs rounded-xl p-3 leading-snug whitespace-pre-wrap">
+                {actionError}
+              </div>
+            )}
+
             <div className="flex gap-3">
-              <button onClick={() => setApproveTarget(null)} className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition">Cancel</button>
-              <button onClick={submitApprove} className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm transition">Confirm Approval</button>
+              <button disabled={actionBusy} onClick={() => { setApproveTarget(null); setActionError(""); }} className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition disabled:opacity-50">Cancel</button>
+              <button disabled={actionBusy} onClick={submitApprove} className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm transition disabled:opacity-60 disabled:cursor-not-allowed">{actionBusy ? "Saving…" : "Confirm Approval"}</button>
             </div>
           </div>
         </div>
@@ -250,9 +279,15 @@ const AdminBusinessApprovals = () => {
               placeholder="Help the submitter understand why…"
             />
 
+            {actionError && (
+              <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-300 text-xs rounded-xl p-3 leading-snug whitespace-pre-wrap">
+                {actionError}
+              </div>
+            )}
+
             <div className="flex gap-3 mt-5">
-              <button onClick={() => setRejectTarget(null)} className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition">Cancel</button>
-              <button onClick={submitReject} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white font-black text-sm transition">Reject</button>
+              <button disabled={actionBusy} onClick={() => { setRejectTarget(null); setActionError(""); }} className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition disabled:opacity-50">Cancel</button>
+              <button disabled={actionBusy} onClick={submitReject} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white font-black text-sm transition disabled:opacity-60 disabled:cursor-not-allowed">{actionBusy ? "Saving…" : "Reject"}</button>
             </div>
           </div>
         </div>
