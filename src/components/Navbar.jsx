@@ -60,7 +60,7 @@ const Navbar = () => {
             onClick={() => navigate("/businesses")}
             className='cursor-pointer flex items-center gap-1 text-emerald-700 hover:bg-emerald-600 hover:text-white hover:rounded-2xl px-3 py-2 font-semibold'
           >
-            <span>🌱</span> Businesses
+            <span></span> Businesses
           </li>
           <li
             onClick={handleCart}
