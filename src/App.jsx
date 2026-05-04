@@ -16,6 +16,10 @@ import MySellItems from './components/MySellItems'
 import MyOrders from './components/MyOrders'
 import RepairRequests from './components/RepairRequests'
 import AdminRepairApprovals from './components/AdminRepairApprovals'
+import Businesses from './components/Businesses'
+import BusinessDetails from './components/BusinessDetails'
+import SubmitBusiness from './components/SubmitBusiness'
+import AdminBusinessApprovals from './components/AdminBusinessApprovals'
 function App() {
   return (
     <Routes>
@@ -44,6 +48,10 @@ function App() {
       <Route path="/my-orders" element={<MyOrders />} />
       <Route path="/repair-requests" element={<RepairRequests />} />
       <Route path="/admin/repair-approvals" element={<AdminRepairApprovals />} />
+      <Route path="/businesses" element={<Businesses />} />
+      <Route path="/businesses/submit" element={<SubmitBusiness />} />
+      <Route path="/businesses/:id" element={<BusinessDetails />} />
+      <Route path="/admin/businesses" element={<AdminBusinessApprovals />} />
     </Routes>
   )
 }
