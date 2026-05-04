@@ -57,6 +57,12 @@ const Navbar = () => {
             Explore
           </li>
           <li
+            onClick={() => navigate("/businesses")}
+            className='cursor-pointer flex items-center gap-1 text-emerald-700 hover:bg-emerald-600 hover:text-white hover:rounded-2xl px-3 py-2 font-semibold'
+          >
+            <span>🌱</span> Businesses
+          </li>
+          <li
             onClick={handleCart}
             className='cursor-pointer hover:bg-black hover:text-white hover:rounded-2xl px-3 py-2'
           >
@@ -110,6 +116,12 @@ const Navbar = () => {
               className='cursor-pointer hover:bg-black hover:text-white rounded-xl px-3 py-2'
             >
               Explore
+            </li>
+            <li
+              onClick={() => { navigate("/businesses"); setMenuOpen(false); }}
+              className='cursor-pointer flex items-center gap-1 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-xl px-3 py-2 font-semibold'
+            >
+              <span>🌱</span> Circular Businesses
             </li>
             <li
               onClick={() => { handleCart(); setMenuOpen(false); }}
