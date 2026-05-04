@@ -13,6 +13,11 @@ const Explore = () => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false)
 
+    // ── Admin edit modal state ──
+    const [editingItem, setEditingItem] = useState(null)
+    const [editForm, setEditForm] = useState({})
+    const [editLoading, setEditLoading] = useState(false)
+
     const isAdmin = localStorage.getItem("isAdmin") === "true";
 
     const filteredProducts =
@@ -78,9 +83,36 @@ const Explore = () => {
         setDeletingId(null);
     };
 
-    const handleEdit = (item) => {
-        localStorage.setItem("editProduct", JSON.stringify(item));
-        window.location.href = "/explore/sell";
+    // ── Open inline edit modal ──
+    const openEdit = (item) => {
+        setEditingItem(item);
+        setEditForm({
+            title: item.title,
+            price: item.price,
+            phone: item.phone,
+            address: item.address,
+            description: item.description,
+            category: item.category,
+            image: item.image,
+        });
+    };
+
+    // ── Save edit ──
+    const handleEditSave = async () => {
+        setEditLoading(true);
+        try {
+            await fetch(`${BASE_URL}/product/${editingItem.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(editForm),
+            });
+            setEditingItem(null);
+            await fetchProducts(); // refresh grid instantly
+        } catch (err) {
+            alert("Update failed ❌");
+        } finally {
+            setEditLoading(false);
+        }
     };
 
     const handleSignOut = () => {
@@ -99,6 +131,13 @@ const Explore = () => {
         { label: "🫧 Washing", value: "Washing Machines" },
     ];
 
+    const productCategories = [
+        "Mobile Phones", "Laptops", "Refrigerators",
+        "Kitchen Applicances", "Washing Machines", "Headphones & Earphones"
+    ];
+
+    const inputClass = "w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-all";
+
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-white font-title">
 
@@ -106,13 +145,10 @@ const Explore = () => {
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-[#0a0a0a]/95 backdrop-blur-md shadow-[0_1px_0_rgba(255,255,255,0.06)]" : "bg-[#0a0a0a]"}`}>
 
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-3 flex items-center gap-3">
-
-                    {/* Logo */}
                     <Link to="/" className="text-xl md:text-2xl font-black tracking-tighter text-white shrink-0 font-bat">
                         Eco<span className="text-emerald-400">loop</span>
                     </Link>
 
-                    {/* Location */}
                     <div className="hidden md:flex items-center gap-1 text-xs text-zinc-400 border border-zinc-800 rounded-full px-3 py-1.5 shrink-0">
                         <span>📍</span>
                         <select className="bg-transparent text-zinc-300 cursor-pointer outline-none text-xs">
@@ -123,7 +159,6 @@ const Explore = () => {
                         </select>
                     </div>
 
-                    {/* Search desktop */}
                     <div className="flex-1 relative hidden sm:block">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">🔍</span>
                         <input
@@ -135,16 +170,12 @@ const Explore = () => {
                         />
                     </div>
 
-                    {/* Mobile search toggle */}
                     <button
                         onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
                         className="sm:hidden flex items-center justify-center w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 shrink-0"
                     >🔍</button>
 
-                    {/* Desktop nav icons */}
                     <div className="hidden md:flex items-center gap-1 shrink-0">
-
-                        {/* ✅ USER DROPDOWN WITH SIGN OUT */}
                         <div className="relative group">
                             <button className="flex flex-col items-center px-2.5 py-1.5 rounded-xl hover:bg-zinc-900 transition">
                                 <span className="text-base">👤</span>
@@ -158,11 +189,7 @@ const Explore = () => {
                                         <div className="px-4 py-3 text-xs text-zinc-400 border-b border-zinc-800">
                                             Signed in as <span className="text-white font-semibold">{username}</span>
                                         </div>
-
-                                        <button
-                                            onClick={handleSignOut}
-                                            className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-b-xl transition border-t border-zinc-800"
-                                        >
+                                        <button onClick={handleSignOut} className="w-full flex items-center gap-2 px-4 py-3 text-sm text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-b-xl transition">
                                             🚪 Sign Out
                                         </button>
                                     </>
@@ -178,7 +205,6 @@ const Explore = () => {
                             + Sell
                         </Link>
 
-                        {/* Repair dropdown */}
                         <div className="relative group">
                             <button className="flex flex-col items-center px-2.5 py-1.5 rounded-xl hover:bg-zinc-900 transition">
                                 <span className="text-base">🔧</span>
@@ -212,7 +238,6 @@ const Explore = () => {
                         )}
                     </div>
 
-                    {/* Mobile right side */}
                     <div className="flex md:hidden items-center gap-2 ml-auto shrink-0">
                         <Link to="/explore/sell" className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs px-3 py-2 rounded-full transition-all">
                             + Sell
@@ -228,7 +253,6 @@ const Explore = () => {
                     </div>
                 </div>
 
-                {/* Mobile search bar */}
                 {mobileSearchOpen && (
                     <div className="sm:hidden px-4 pb-3">
                         <div className="relative">
@@ -245,7 +269,6 @@ const Explore = () => {
                     </div>
                 )}
 
-                {/* Mobile drawer menu */}
                 {mobileMenuOpen && (
                     <div className="md:hidden bg-zinc-950 border-t border-zinc-800 px-4 py-4 space-y-1">
                         {username ? (
@@ -257,44 +280,21 @@ const Explore = () => {
                                 <span>👤</span> Sign In
                             </Link>
                         )}
-                        <Link to="/repair" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white">
-                            <span>🔧</span> Book Repair
-                        </Link>
-                        <Link to="/repair-requests" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white">
-                            <span>📋</span> My Repair Requests
-                        </Link>
-                        <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white">
-                            <span>🛒</span> Cart
-                        </Link>
-                        <Link to="/my-products" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white">
-                            <span>📦</span> My Listings
-                        </Link>
-                        <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white">
-                            <span>🧾</span> My Orders
-                        </Link>
-                        {isAdmin && (
-                            <Link to="/admin/repair-approvals" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-emerald-400">
-                                <span>🛠</span> Repair Approvals
-                            </Link>
-                        )}
-                        {isAdmin && (
-                            <div className="flex items-center gap-2 px-3 py-2">
-                                <span className="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold px-3 py-1 rounded-full">👑 Admin Mode</span>
-                            </div>
-                        )}
-                        {/* ✅ Sign Out in mobile menu */}
+                        <Link to="/repair" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>🔧</span> Book Repair</Link>
+                        <Link to="/repair-requests" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>📋</span> My Repair Requests</Link>
+                        <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>🛒</span> Cart</Link>
+                        <Link to="/my-products" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>📦</span> My Listings</Link>
+                        <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>🧾</span> My Orders</Link>
+                        {isAdmin && <Link to="/admin/repair-approvals" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-emerald-400"><span>🛠</span> Repair Approvals</Link>}
+                        {isAdmin && <div className="flex items-center gap-2 px-3 py-2"><span className="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold px-3 py-1 rounded-full">👑 Admin Mode</span></div>}
                         {username && (
-                            <button
-                                onClick={handleSignOut}
-                                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-red-400 border-t border-zinc-800 mt-2"
-                            >
+                            <button onClick={handleSignOut} className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-red-400 border-t border-zinc-800 mt-2">
                                 <span>🚪</span> Sign Out
                             </button>
                         )}
                     </div>
                 )}
 
-                {/* Category pills */}
                 <div className="border-t border-zinc-900">
                     <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-2.5 flex gap-2 overflow-x-auto scrollbar-hide">
                         {categories.map((cat) => (
@@ -302,9 +302,9 @@ const Explore = () => {
                                 key={cat.value}
                                 onClick={() => setCategory(cat.value)}
                                 className={`shrink-0 px-3 md:px-4 py-1.5 rounded-full text-xs font-medium transition-all border ${Category === cat.value
-                                        ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_0_12px_rgba(52,211,153,0.3)]"
-                                        : "bg-transparent text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-white"
-                                    }`}
+                                    ? "bg-emerald-500 text-black border-emerald-500 shadow-[0_0_12px_rgba(52,211,153,0.3)]"
+                                    : "bg-transparent text-zinc-400 border-zinc-800 hover:border-zinc-600 hover:text-white"
+                                }`}
                             >
                                 {cat.label}
                             </button>
@@ -313,7 +313,7 @@ const Explore = () => {
                 </div>
             </nav>
 
-            {/* ─── HERO BANNER ─── */}
+            {/* ─── HERO ─── */}
             <div className="pt-[130px] md:pt-[120px]">
                 <div className="max-w-[1400px] mx-auto px-4 md:px-6 pt-4 md:pt-8 pb-4 md:pb-6">
                     <div className="relative overflow-hidden rounded-2xl md:rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-900 to-emerald-950 border border-zinc-800 p-6 md:p-10">
@@ -338,9 +338,7 @@ const Explore = () => {
                 <div className="flex items-center justify-between mb-4 md:mb-6 flex-wrap gap-2">
                     <h2 className="text-lg md:text-xl font-bold text-white">
                         New Recommendations
-                        <span className="ml-2 text-sm font-normal text-zinc-500">
-                            ({filteredProducts.length} items)
-                        </span>
+                        <span className="ml-2 text-sm font-normal text-zinc-500">({filteredProducts.length} items)</span>
                     </h2>
                     {isAdmin && (
                         <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs px-3 py-1.5 rounded-full">
@@ -360,13 +358,21 @@ const Explore = () => {
                         {Array.isArray(filteredProducts) && filteredProducts.map((item) => (
                             <div key={item.id} className="group relative">
 
-                                {/* Admin overlay */}
+                                {/* ── ADMIN OVERLAY ── */}
                                 {isAdmin && (
                                     <div className="absolute inset-0 z-10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto">
                                         <div className="absolute inset-0 bg-black/55 rounded-2xl backdrop-blur-[1px]" />
                                         <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-20">
-                                            <button onClick={(e) => { e.preventDefault(); handleEdit(item); }} className="flex items-center gap-1 bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-600 text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition shadow-lg">✏️ Edit</button>
-                                            <button onClick={(e) => { e.preventDefault(); handleDelete(item.id); }} disabled={deletingId === item.id} className="flex items-center gap-1 bg-red-600/90 hover:bg-red-500 border border-red-500/40 text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition shadow-lg disabled:opacity-50">{deletingId === item.id ? "⏳" : "🗑 Delete"}</button>
+                                            {/* ✅ Now opens inline modal instead of redirecting */}
+                                            <button
+                                                onClick={(e) => { e.preventDefault(); openEdit(item); }}
+                                                className="flex items-center gap-1 bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-600 text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition shadow-lg"
+                                            >✏️ Edit</button>
+                                            <button
+                                                onClick={(e) => { e.preventDefault(); handleDelete(item.id); }}
+                                                disabled={deletingId === item.id}
+                                                className="flex items-center gap-1 bg-red-600/90 hover:bg-red-500 border border-red-500/40 text-white text-[10px] font-semibold px-2.5 py-1.5 rounded-lg transition shadow-lg disabled:opacity-50"
+                                            >{deletingId === item.id ? "⏳" : "🗑 Delete"}</button>
                                         </div>
                                         <div className="absolute bottom-[50px] left-2 right-2 flex gap-1 z-20">
                                             <button onClick={(e) => { e.preventDefault(); updateStatus(item.id, "available"); }} className={`flex-1 text-[9px] font-bold py-1.5 rounded-lg border transition-all ${item.status !== "sold" ? "bg-emerald-500 text-black border-emerald-400" : "bg-zinc-800/80 text-zinc-400 border-zinc-700"}`}>✅ Available</button>
@@ -375,7 +381,7 @@ const Explore = () => {
                                     </div>
                                 )}
 
-                                {/* Product card */}
+                                {/* ── PRODUCT CARD ── */}
                                 {item.status === "sold" ? (
                                     <div className="cursor-not-allowed">
                                         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden opacity-60">
@@ -412,6 +418,86 @@ const Explore = () => {
                     </div>
                 )}
             </div>
+
+            {/* ── ADMIN EDIT MODAL ── */}
+            {editingItem && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black/70 backdrop-blur-sm">
+                    <div className="bg-zinc-950 border border-zinc-800 rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+
+                        <div className="flex items-center justify-between mb-5">
+                            <div>
+                                <h2 className="text-xl font-black text-white">Edit Product</h2>
+                                <p className="text-zinc-500 text-xs mt-0.5">Changes reflect on Explore instantly</p>
+                            </div>
+                            <button
+                                onClick={() => setEditingItem(null)}
+                                className="w-8 h-8 flex items-center justify-center rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition"
+                            >✕</button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Title</label>
+                                <input value={editForm.title} onChange={e => setEditForm({ ...editForm, title: e.target.value })} className={inputClass} placeholder="Product title" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Price (₹)</label>
+                                    <input value={editForm.price} onChange={e => setEditForm({ ...editForm, price: e.target.value })} className={inputClass} placeholder="0" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Phone</label>
+                                    <input value={editForm.phone} onChange={e => setEditForm({ ...editForm, phone: e.target.value })} className={inputClass} placeholder="10 digits" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Address</label>
+                                <input value={editForm.address} onChange={e => setEditForm({ ...editForm, address: e.target.value })} className={inputClass} placeholder="Location" />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Description</label>
+                                <textarea value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={3} className={`${inputClass} resize-none`} placeholder="Describe your product..." />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Category</label>
+                                <select value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })} className={`${inputClass} cursor-pointer`}>
+                                    <option value="">Select category</option>
+                                    {productCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Image URL</label>
+                                <input value={editForm.image} onChange={e => setEditForm({ ...editForm, image: e.target.value })} className={inputClass} placeholder="https://..." />
+                                {editForm.image && (
+                                    <img src={editForm.image} alt="preview" className="mt-2 w-full h-28 object-cover rounded-xl border border-zinc-800" />
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => setEditingItem(null)}
+                                className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition"
+                            >Cancel</button>
+                            <button
+                                onClick={handleEditSave}
+                                disabled={editLoading}
+                                className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm transition disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                                {editLoading ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                                        </svg>
+                                        Saving...
+                                    </span>
+                                ) : "Save Changes →"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
