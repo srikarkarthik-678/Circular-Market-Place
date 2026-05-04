@@ -303,21 +303,28 @@ app.put("/admin/businesses/:id", async (req, res) => {
       return res.status(400).json({ error: "certification_tier (bronze/silver/gold) required when approving" });
     }
 
-    const result = await pool.query(
-      `UPDATE businesses
-         SET status = $1,
-             certification_tier = $2,
-             rejection_reason = $3,
-             approved_at = CASE WHEN $1 = 'approved' THEN NOW() ELSE approved_at END
-       WHERE id = $4
-       RETURNING *`,
-      [
-        status,
-        status === "approved" ? certification_tier : null,
-        status === "rejected" ? (rejection_reason || null) : null,
-        id,
-      ]
-    );
+    // Two distinct UPDATE shapes — avoids a CASE expression that mixed
+    // timestamptz (NOW()) with the timestamp column type and could 500.
+    const result = status === "approved"
+      ? await pool.query(
+          `UPDATE businesses
+             SET status = 'approved',
+                 certification_tier = $1,
+                 rejection_reason = NULL,
+                 approved_at = NOW()
+           WHERE id = $2
+           RETURNING *`,
+          [certification_tier, id]
+        )
+      : await pool.query(
+          `UPDATE businesses
+             SET status = $1,
+                 certification_tier = NULL,
+                 rejection_reason = $2
+           WHERE id = $3
+           RETURNING *`,
+          [status, status === "rejected" ? (rejection_reason || null) : null, id]
+        );
 
     if (result.rowCount === 0) {
       return res.status(404).json({ error: `No business with id ${id}` });

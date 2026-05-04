@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import BASE_URL from "../utils/api";
 import CertificationBadge from "./CertificationBadge";
 
+const isValidImageUrl = (s) => typeof s === "string" && /^https?:\/\//i.test(s.trim());
+
 const STATUS_STYLES = {
   pending: { bg: "bg-yellow-500/10", text: "text-yellow-300", border: "border-yellow-500/30", label: "⏳ Pending" },
   approved: { bg: "bg-emerald-500/10", text: "text-emerald-300", border: "border-emerald-500/30", label: "✅ Approved" },
@@ -150,11 +152,12 @@ const AdminBusinessApprovals = () => {
                   <div className="flex flex-col md:flex-row md:items-start gap-5">
                     {/* Logo / cover */}
                     <div className="w-full md:w-32 h-32 rounded-2xl bg-zinc-800 border border-zinc-700 overflow-hidden flex items-center justify-center shrink-0">
-                      {b.cover_url || b.logo_url ? (
-                        <img src={b.cover_url || b.logo_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-4xl text-zinc-600 font-black">{(b.name || "?").charAt(0).toUpperCase()}</span>
-                      )}
+                      {(() => {
+                        const src = isValidImageUrl(b.cover_url) ? b.cover_url : isValidImageUrl(b.logo_url) ? b.logo_url : null;
+                        return src
+                          ? <img src={src} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                          : <span className="text-4xl text-zinc-600 font-black">{(b.name || "?").charAt(0).toUpperCase()}</span>;
+                      })()}
                     </div>
 
                     <div className="flex-1 min-w-0">
