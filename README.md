@@ -162,3 +162,20 @@ Ecoloop provides a hyperlocal marketplace where:
 ┌─────────────┐    ┌─────────────────┐
 │  PostgreSQL │    │   OpenSearch    │
 └─────────────┘    └─────────────────┘
+
+### Database Schema
+
+CREATE TABLE products (
+  id           SERIAL PRIMARY KEY,
+  title        VARCHAR(255) NOT NULL,
+  price        INTEGER NOT NULL,
+  phone        VARCHAR(20) NOT NULL,
+  address      TEXT NOT NULL,
+  description  TEXT NOT NULL,
+  image        TEXT NOT NULL,
+  category     VARCHAR(100) NOT NULL,
+  seller       VARCHAR(255),
+  buyer        VARCHAR(255),
+  status       VARCHAR(50) DEFAULT 'active',
+  created_at   TIMESTAMP DEFAULT NOW()
+);
