@@ -46,28 +46,71 @@ const AdminBusinessApprovals = () => {
   };
 
   const submitApprove = async () => {
-    if (!approveTarget) return;
-    await fetch(`${BASE_URL}/admin/businesses/${approveTarget.id}`, {
+  if (!approveTarget) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/admin/businesses/${approveTarget.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "approved", certification_tier: tier }),
     });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || "Approval failed");
+    }
+
+    // ✅ update UI instantly (no delay)
+    setBusinesses(prev =>
+      prev.map(b =>
+        b.id === approveTarget.id
+          ? { ...b, status: "approved", certification_tier: tier }
+          : b
+      )
+    );
+
     setApproveTarget(null);
     setTier("bronze");
-    fetchAll();
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Approval failed");
+  }
+};
 
   const submitReject = async () => {
-    if (!rejectTarget) return;
-    await fetch(`${BASE_URL}/admin/businesses/${rejectTarget.id}`, {
+  if (!rejectTarget) return;
+
+  try {
+    const res = await fetch(`${BASE_URL}/admin/businesses/${rejectTarget.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "rejected", rejection_reason: rejectReason }),
     });
+
+    const data = await res.json();
+
+    if (!res.ok || data.error) {
+      throw new Error(data.error || "Reject failed");
+    }
+
+    setBusinesses(prev =>
+      prev.map(b =>
+        b.id === rejectTarget.id
+          ? { ...b, status: "rejected", rejection_reason: rejectReason }
+          : b
+      )
+    );
+
     setRejectTarget(null);
     setRejectReason("");
-    fetchAll();
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert("Reject failed");
+  }
+};
 
   if (!isAdmin) return null;
 
