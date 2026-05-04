@@ -64,7 +64,7 @@ const Login = () => {
         localStorage.setItem("username", data.username);
         localStorage.setItem("isAdmin", data.isAdmin);
         alert(isLogin ? "Login successful ✅" : "Signup successful 🎉");
-        window.location.href = "/";
+        window.location.href = "/explore";
       } else {
         alert(data.message || "Something went wrong ❌");
       }
