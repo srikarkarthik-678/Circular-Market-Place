@@ -36,7 +36,7 @@ const Repair = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4 font-title">
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-8">
-        <div className="mb-4"><Link to="/" className="text-sm text-gray-500 hover:text-black">← Back to Explore</Link></div>
+        <div className="mb-4"><Link to="/explore" className="text-sm text-gray-500 hover:text-black">← Back to Explore</Link></div>
         <h1 className="text-3xl font-bold mb-6 text-gray-800">🔧 Book a Repair Service</h1>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
