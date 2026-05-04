@@ -159,6 +159,13 @@ async function initBusinessesTable() {
         approved_at TIMESTAMP
       );
     `);
+    // Safety net — add any column the live table is missing (no-op if already there).
+    // Covers cases where the table was created in an earlier state.
+    await pool.query(`ALTER TABLE businesses ADD COLUMN IF NOT EXISTS certification_tier VARCHAR(10);`);
+    await pool.query(`ALTER TABLE businesses ADD COLUMN IF NOT EXISTS rejection_reason TEXT;`);
+    await pool.query(`ALTER TABLE businesses ADD COLUMN IF NOT EXISTS approved_at TIMESTAMP;`);
+    await pool.query(`ALTER TABLE businesses ADD COLUMN IF NOT EXISTS items_diverted INT DEFAULT 0;`);
+    await pool.query(`ALTER TABLE businesses ADD COLUMN IF NOT EXISTS co2_saved_kg INT DEFAULT 0;`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status);`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_businesses_category ON businesses(category);`);
     console.log("✅ businesses table ready");
@@ -287,34 +294,46 @@ app.get("/admin/businesses", async (req, res) => {
 app.put("/admin/businesses/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, certification_tier, rejection_reason } = req.body;
+    const { status, certification_tier, rejection_reason } = req.body || {};
 
     if (!["pending", "approved", "rejected"].includes(status)) {
-      return res.status(400).json({ error: "Invalid status" });
+      return res.status(400).json({ error: `Invalid status '${status}'. Must be pending|approved|rejected.` });
     }
     if (status === "approved" && !["bronze", "silver", "gold"].includes(certification_tier)) {
       return res.status(400).json({ error: "certification_tier (bronze/silver/gold) required when approving" });
     }
 
-    await pool.query(
-      `UPDATE businesses
-         SET status = $1,
-             certification_tier = $2,
-             rejection_reason = $3,
-             approved_at = CASE WHEN $1 = 'approved' THEN NOW() ELSE approved_at END
-       WHERE id = $4`,
-      [
-        status,
-        status === "approved" ? certification_tier : null,
-        status === "rejected" ? (rejection_reason || null) : null,
-        id,
-      ]
-    );
+    // Two distinct UPDATE shapes — avoids a CASE expression that mixed
+    // timestamptz (NOW()) with the timestamp column type and could 500.
+    const result = status === "approved"
+      ? await pool.query(
+          `UPDATE businesses
+             SET status = 'approved',
+                 certification_tier = $1,
+                 rejection_reason = NULL,
+                 approved_at = NOW()
+           WHERE id = $2
+           RETURNING *`,
+          [certification_tier, id]
+        )
+      : await pool.query(
+          `UPDATE businesses
+             SET status = $1,
+                 certification_tier = NULL,
+                 rejection_reason = $2
+           WHERE id = $3
+           RETURNING *`,
+          [status, status === "rejected" ? (rejection_reason || null) : null, id]
+        );
 
-    res.json({ success: true });
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: `No business with id ${id}` });
+    }
+
+    res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     console.error("Admin business update error:", err);
-    res.status(500).json({ error: "Update failed" });
+    res.status(500).json({ error: `Update failed: ${err.message}` });
   }
 });
 

@@ -3,6 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import BASE_URL from "../utils/api";
 import CertificationBadge, { tierTooltip } from "./CertificationBadge";
 
+const isValidImageUrl = (s) => typeof s === "string" && /^https?:\/\//i.test(s.trim());
+
 const CATEGORY_LABEL = {
   repair: "🔧 Repair Service",
   resale: "🛍 Resale Shop",
@@ -61,8 +63,8 @@ const BusinessDetails = () => {
       {/* Cover */}
       <div className="max-w-5xl mx-auto px-4 md:px-6 mt-4">
         <div className="relative aspect-[21/9] rounded-3xl overflow-hidden bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-800">
-          {biz.cover_url ? (
-            <img src={biz.cover_url} alt={biz.name} className="w-full h-full object-cover" />
+          {isValidImageUrl(biz.cover_url) ? (
+            <img src={biz.cover_url} alt={biz.name} className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-7xl text-zinc-700 font-black">{initial}</div>
           )}
@@ -79,8 +81,8 @@ const BusinessDetails = () => {
       <div className="max-w-5xl mx-auto px-4 md:px-6 -mt-12 relative z-10">
         <div className="flex items-end gap-5 flex-wrap">
           <div className="w-24 h-24 rounded-3xl bg-zinc-950 border-2 border-zinc-800 shadow-xl flex items-center justify-center overflow-hidden shrink-0">
-            {biz.logo_url ? (
-              <img src={biz.logo_url} alt="" className="w-full h-full object-cover" />
+            {isValidImageUrl(biz.logo_url) ? (
+              <img src={biz.logo_url} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
             ) : (
               <span className="text-emerald-400 font-black text-3xl">{initial}</span>
             )}

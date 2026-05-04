@@ -11,6 +11,8 @@ const CATEGORY_LABEL = {
   rental: "📦 Rental",
 };
 
+const isValidImageUrl = (s) => typeof s === "string" && /^https?:\/\//i.test(s.trim());
+
 const compact = (n) => {
   const num = Number(n) || 0;
   if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
@@ -22,7 +24,8 @@ const BusinessCard = ({ business, asLink = true }) => {
   const Wrapper = asLink ? Link : "div";
   const wrapperProps = asLink ? { to: `/businesses/${business.id}` } : {};
 
-  const cover = business.cover_url || business.logo_url || "";
+  const cover = isValidImageUrl(business.cover_url) ? business.cover_url : isValidImageUrl(business.logo_url) ? business.logo_url : "";
+  const validLogo = isValidImageUrl(business.logo_url) ? business.logo_url : "";
   const initial = (business.name || "?").trim().charAt(0).toUpperCase();
 
   return (
@@ -53,8 +56,8 @@ const BusinessCard = ({ business, asLink = true }) => {
 
           {/* Logo chip */}
           <div className="absolute -bottom-6 left-4 w-14 h-14 rounded-2xl bg-zinc-950 border-2 border-zinc-800 shadow-lg flex items-center justify-center overflow-hidden">
-            {business.logo_url ? (
-              <img src={business.logo_url} alt="" className="w-full h-full object-cover" />
+            {validLogo ? (
+              <img src={validLogo} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
             ) : (
               <span className="text-emerald-400 font-black text-xl">{initial}</span>
             )}

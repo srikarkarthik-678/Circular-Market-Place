@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import BASE_URL from "../utils/api";
 import CertificationBadge from "./CertificationBadge";
 
+const isValidImageUrl = (s) => typeof s === "string" && /^https?:\/\//i.test(s.trim());
+
 const STATUS_STYLES = {
   pending: { bg: "bg-yellow-500/10", text: "text-yellow-300", border: "border-yellow-500/30", label: "⏳ Pending" },
   approved: { bg: "bg-emerald-500/10", text: "text-emerald-300", border: "border-emerald-500/30", label: "✅ Approved" },
@@ -24,6 +26,8 @@ const AdminBusinessApprovals = () => {
   const [tier, setTier] = useState("bronze");
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [actionBusy, setActionBusy] = useState(false);
 
   const isAdmin = typeof window !== "undefined" && localStorage.getItem("isAdmin") === "true";
 
@@ -35,13 +39,40 @@ const AdminBusinessApprovals = () => {
   const fetchAll = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}/admin/businesses`);
+      // Cache-bust + no-store so Vercel/browser never serves a stale list after an approval
+      const res = await fetch(`${BASE_URL}/admin/businesses?_=${Date.now()}`, { cache: "no-store" });
       const data = await res.json();
       setBusinesses(Array.isArray(data) ? data : []);
     } catch {
       setBusinesses([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const sendStatusUpdate = async (id, payload) => {
+    setActionBusy(true);
+    setActionError("");
+    try {
+      const res = await fetch(`${BASE_URL}/admin/businesses/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+      const text = await res.text();
+      let body = null;
+      try { body = text ? JSON.parse(text) : null; } catch { /* non-JSON */ }
+      if (!res.ok || (body && body.error)) {
+        throw new Error((body && body.error) || `Server returned ${res.status}${text ? `: ${text.slice(0, 140)}` : ""}`);
+      }
+      return true;
+    } catch (err) {
+      console.error("Admin status update failed:", err);
+      setActionError(err.message || "Update failed");
+      return false;
+    } finally {
+      setActionBusy(false);
     }
   };
 
@@ -170,11 +201,12 @@ const AdminBusinessApprovals = () => {
                   <div className="flex flex-col md:flex-row md:items-start gap-5">
                     {/* Logo / cover */}
                     <div className="w-full md:w-32 h-32 rounded-2xl bg-zinc-800 border border-zinc-700 overflow-hidden flex items-center justify-center shrink-0">
-                      {b.cover_url || b.logo_url ? (
-                        <img src={b.cover_url || b.logo_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <span className="text-4xl text-zinc-600 font-black">{(b.name || "?").charAt(0).toUpperCase()}</span>
-                      )}
+                      {(() => {
+                        const src = isValidImageUrl(b.cover_url) ? b.cover_url : isValidImageUrl(b.logo_url) ? b.logo_url : null;
+                        return src
+                          ? <img src={src} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
+                          : <span className="text-4xl text-zinc-600 font-black">{(b.name || "?").charAt(0).toUpperCase()}</span>;
+                      })()}
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -264,9 +296,15 @@ const AdminBusinessApprovals = () => {
               ))}
             </div>
 
+            {actionError && (
+              <div className="mb-4 bg-red-500/10 border border-red-500/30 text-red-300 text-xs rounded-xl p-3 leading-snug whitespace-pre-wrap">
+                {actionError}
+              </div>
+            )}
+
             <div className="flex gap-3">
-              <button onClick={() => setApproveTarget(null)} className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition">Cancel</button>
-              <button onClick={submitApprove} className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm transition">Confirm Approval</button>
+              <button disabled={actionBusy} onClick={() => { setApproveTarget(null); setActionError(""); }} className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition disabled:opacity-50">Cancel</button>
+              <button disabled={actionBusy} onClick={submitApprove} className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-sm transition disabled:opacity-60 disabled:cursor-not-allowed">{actionBusy ? "Saving…" : "Confirm Approval"}</button>
             </div>
           </div>
         </div>
@@ -293,9 +331,15 @@ const AdminBusinessApprovals = () => {
               placeholder="Help the submitter understand why…"
             />
 
+            {actionError && (
+              <div className="mt-4 bg-red-500/10 border border-red-500/30 text-red-300 text-xs rounded-xl p-3 leading-snug whitespace-pre-wrap">
+                {actionError}
+              </div>
+            )}
+
             <div className="flex gap-3 mt-5">
-              <button onClick={() => setRejectTarget(null)} className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition">Cancel</button>
-              <button onClick={submitReject} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white font-black text-sm transition">Reject</button>
+              <button disabled={actionBusy} onClick={() => { setRejectTarget(null); setActionError(""); }} className="flex-1 py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 text-sm font-bold transition disabled:opacity-50">Cancel</button>
+              <button disabled={actionBusy} onClick={submitReject} className="flex-1 py-3 rounded-xl bg-red-500 hover:bg-red-400 text-white font-black text-sm transition disabled:opacity-60 disabled:cursor-not-allowed">{actionBusy ? "Saving…" : "Reject"}</button>
             </div>
           </div>
         </div>

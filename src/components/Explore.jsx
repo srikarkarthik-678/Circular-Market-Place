@@ -219,6 +219,10 @@ const Explore = () => {
                             </div>
                         </div>
 
+                        <Link to="/businesses" className="flex flex-col items-center px-2.5 py-1.5 rounded-xl hover:bg-zinc-900 transition group">
+                            <span className="text-base">🌱</span>
+                            <span className="text-[9px] text-emerald-400 group-hover:text-emerald-300 transition mt-0.5">Businesses</span>
+                        </Link>
                         <Link to="/cart" className="flex flex-col items-center px-2.5 py-1.5 rounded-xl hover:bg-zinc-900 transition group">
                             <span className="text-base">🛒</span>
                             <span className="text-[9px] text-zinc-400 group-hover:text-white transition mt-0.5">Cart</span>
@@ -282,6 +286,7 @@ const Explore = () => {
                         )}
                         <Link to="/repair" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>🔧</span> Book Repair</Link>
                         <Link to="/repair-requests" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>📋</span> My Repair Requests</Link>
+                        <Link to="/businesses" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-emerald-400 hover:text-emerald-300"><span>🌱</span> Circular Businesses</Link>
                         <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>🛒</span> Cart</Link>
                         <Link to="/my-products" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>📦</span> My Listings</Link>
                         <Link to="/my-orders" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-zinc-900 transition text-sm text-zinc-300 hover:text-white"><span>🧾</span> My Orders</Link>
