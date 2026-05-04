@@ -34,7 +34,7 @@ const RepairRequests = () => {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <Link to="/" className="text-sm text-gray-400 hover:text-black">← Back to Explore</Link>
+            <Link to="/explore" className="text-sm text-gray-400 hover:text-black">← Back to Explore</Link>
             <h1 className="text-3xl font-bold text-gray-800 mt-1">🔧 My Repair Requests</h1>
           </div>
           <Link to="/repair" className="px-5 py-2 bg-black text-white rounded-full text-sm hover:bg-gray-800 transition">+ New Request</Link>
