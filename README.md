@@ -106,13 +106,6 @@ Ecoloop provides a hyperlocal marketplace where:
 | Razorpay | Payment gateway |
 | dotenv | Environment variable management |
 
-### Infrastructure
-| Service | Purpose |
-|---|---|
-| Render / Railway | Backend hosting |
-| Neon / Supabase | Managed PostgreSQL |
-| OpenSearch Service | Search engine |
-| Cloudinary | Media storage |
 
 ---
 
@@ -323,6 +316,34 @@ CREATE TABLE repair_requests (
   status VARCHAR(50) DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS businesses (
+       id SERIAL PRIMARY KEY,
+       name VARCHAR(120) NOT NULL,
+       tagline VARCHAR(200),
+       description TEXT NOT NULL,
+       category VARCHAR(40) NOT NULL,          
+       certification_tier VARCHAR(10),          
+       logo_url TEXT,
+       cover_url TEXT,
+       website TEXT,
+       phone VARCHAR(20),
+       email VARCHAR(120),
+       city VARCHAR(80),
+       address TEXT,
+       founded_year INT,
+       -- Impact stats (self-reported, shown on cards)
+       items_diverted INT DEFAULT 0,
+       co2_saved_kg INT DEFAULT 0,
+       -- Workflow
+       status VARCHAR(20) DEFAULT 'pending',    
+       rejection_reason TEXT,
+       submitted_by VARCHAR(120) NOT NULL,      
+       created_at TIMESTAMP DEFAULT NOW(),
+       approved_at TIMESTAMP
+     );
+     CREATE INDEX IF NOT EXISTS idx_businesses_status ON businesses(status);
+     CREATE INDEX IF NOT EXISTS idx_businesses_category ON businesses(category);
 ```
 
 ### 5. Sync Existing Products to OpenSearch
@@ -331,6 +352,8 @@ After setup, visit:
 GET http://localhost:5000/sync-products
 ```
 This indexes all existing PostgreSQL products into OpenSearch.
+
+And please type exact results (for example if product title is Iphone please search Iphone as exactly same to find ur item..These are case-sesitive too)
 
 ---
 
@@ -369,12 +392,11 @@ VITE_API_URL=http://localhost:5000
 ## 📁 Project Structure
 
 ```
-ecoloop/
-├── client/                          # React Frontend
+ecoloop/                          
 │   ├── public/
 │   │   └── icons/                   # SVG icons
 │   ├── src/
-│   │   ├── pages/
+│   │   ├── pages/                   # React Frontend
 │   │   │   ├── Explore.jsx          # Main marketplace page
 │   │   │   ├── ProductDetails.jsx   # Single product view
 │   │   │   ├── Sell.jsx             # List a product
@@ -405,10 +427,14 @@ ecoloop/
 
 | Member | Role | Responsibilities |
 |--------|------|-----------------|
-| **Karthik** (SE23UCSE104) | Full Stack Developer | Core MATLAB implementation *(research module)*, complete frontend UI (React + Tailwind), backend API (Express + PostgreSQL), OpenSearch integration, debugging, model training & baseline evaluations |
-| *(Member 2)* | *(Role)* | *(Add contribution)* |
-| *(Member 3)* | *(Role)* | *(Add contribution)* |
-
+| **Srikar Karthik** (SE23UCSE104) |FrontLead | Backend Architecture 
+| **Ruthvik Reddy** (SE23UCSE116) |Project Manager | Bussiness webpage and its backend
+| **Chervith Nannuru** (SE23UCSE049) |Authentication page and its backend
+| **Vikas Reddy** (SE23UCSE114) |Search & Filtering Optimization  
+| **Sai Sasta** (SE23UCSE141) |Payment Gateway  
+| **Siddardha** (SE23UCSE143) |Testing & Documentation 
+| **Anirvesh Naidu** (SE23UCSE242) |Database Management 
+| **Surya Reddy** (SE23UARI040) |Repair & Service Directory page 
 ---
 
 ## 🔑 Admin Access
@@ -430,8 +456,7 @@ Admin capabilities:
 3. Razorpay modal opens in browser
 4. On payment, Razorpay returns `order_id`, `payment_id`, `signature`
 5. Frontend calls `POST /api/payment/verify`
-6. Backend verifies HMAC SHA-256 signature
-7. On success, buyer is recorded via `PUT /purchase/:id`
+6. On success, buyer is recorded via `PUT /purchase/:id`
 
 ---
 
@@ -450,15 +475,13 @@ Ecoloop uses **OpenSearch** (AWS-compatible Elasticsearch fork) for product sear
 
 ## 🖼 Screenshots
 
-| Page | Description |
-|------|-------------|
-| Explore | Main marketplace with hero banner, category filters, product grid |
-| Product Detail | Full product view with seller info and Add to Cart |
-| Sell | Form to list a new product with Cloudinary image upload |
-| Cart | Shopping cart with quantity controls and Razorpay checkout |
-| Repair | Book a repair service form |
-| My Listings | Seller dashboard with 24-hour edit/delete window |
-| Admin | Hover-to-manage product cards + Repair Approvals dashboard |
+<img width="1881" height="858" alt="image" src="https://github.com/user-attachments/assets/4313aa0f-9156-4047-a376-bfbd6a3d2d6c" />
+<img width="1889" height="868" alt="image" src="https://github.com/user-attachments/assets/947dbd47-f644-4b6c-a026-995750b16c34" />
+<img width="1883" height="768" alt="image" src="https://github.com/user-attachments/assets/20f38ecc-3e06-45a8-9b4b-9b98f9a73add" />
+<img width="1894" height="839" alt="image" src="https://github.com/user-attachments/assets/6680ae88-39d9-4356-bd20-919edb0c2226" />
+![Uploading image.png…]()
+
+
 
 ---
 
