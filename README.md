@@ -109,6 +109,40 @@ Ecoloop provides a hyperlocal marketplace where:
 
 ---
 
+## 📁 Project Structure
+
+```
+ecoloop/                          
+│   ├── public/
+│   │   └── icons/                   # SVG icons
+│   ├── src/
+│   │   ├── pages/                   # React Frontend
+│   │   │   ├── Explore.jsx          # Main marketplace page
+│   │   │   ├── ProductDetails.jsx   # Single product view
+│   │   │   ├── Sell.jsx             # List a product
+│   │   │   ├── Cart.jsx             # Shopping cart
+│   │   │   ├── Login.jsx            # Auth page
+│   │   │   ├── MySellItems.jsx      # Seller's listings
+│   │   │   ├── MyOrders.jsx         # Buyer's orders
+│   │   │   ├── Repair.jsx           # Book repair service
+│   │   │   ├── RepairRequests.jsx   # User's repair requests
+│   │   │   └── AdminRepairApprovals.jsx  # Admin dashboard
+│   │   ├── utils/
+│   │   │   ├── api.js               # BASE_URL config
+│   │   │   └── cart.js              # Cart utility functions
+│   │   ├── App.jsx                  # Routes
+│   │   └── main.jsx                 # Entry point
+│   ├── package.json
+│   └── tailwind.config.js
+│
+└── server/
+    ├── server.js                    # Express app + all routes
+    ├── package.json
+    └── .env                         # Environment variables
+```
+
+---
+
 ## 🏗 System Architecture
 
 ```
@@ -389,39 +423,7 @@ VITE_API_URL=http://localhost:5000
 
 ---
 
-## 📁 Project Structure
 
-```
-ecoloop/                          
-│   ├── public/
-│   │   └── icons/                   # SVG icons
-│   ├── src/
-│   │   ├── pages/                   # React Frontend
-│   │   │   ├── Explore.jsx          # Main marketplace page
-│   │   │   ├── ProductDetails.jsx   # Single product view
-│   │   │   ├── Sell.jsx             # List a product
-│   │   │   ├── Cart.jsx             # Shopping cart
-│   │   │   ├── Login.jsx            # Auth page
-│   │   │   ├── MySellItems.jsx      # Seller's listings
-│   │   │   ├── MyOrders.jsx         # Buyer's orders
-│   │   │   ├── Repair.jsx           # Book repair service
-│   │   │   ├── RepairRequests.jsx   # User's repair requests
-│   │   │   └── AdminRepairApprovals.jsx  # Admin dashboard
-│   │   ├── utils/
-│   │   │   ├── api.js               # BASE_URL config
-│   │   │   └── cart.js              # Cart utility functions
-│   │   ├── App.jsx                  # Routes
-│   │   └── main.jsx                 # Entry point
-│   ├── package.json
-│   └── tailwind.config.js
-│
-└── server/
-    ├── server.js                    # Express app + all routes
-    ├── package.json
-    └── .env                         # Environment variables
-```
-
----
 
 ## 👥 Team Contributions
 
