@@ -294,7 +294,7 @@ cd ecoloop
 
 ### 2. Backend Setup
 ```bash
-cd server
+cd backend 
 npm install
 ```
 
@@ -307,7 +307,6 @@ node server.js
 
 ### 3. Frontend Setup
 ```bash
-cd client
 npm install
 npm run dev
 # App runs on http://localhost:5173
