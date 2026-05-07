@@ -1,6 +1,8 @@
 # ♻️ Ecoloop — Circular Economy Marketplace
 
 > A full-stack web platform that facilitates buying, selling, repairing, and exchanging used electronics locally — built to promote the circular economy and reduce e-waste.
+>
+> circular-market-place.vercel.app
 
 ---
 
